@@ -3,7 +3,7 @@
  * @Description: 请输入....
  * @Date: 2024-05-22 22:21:46
  * @LastEditors: Do not edit
- * @LastEditTime: 2024-06-01 20:03:10
+ * @LastEditTime: 2024-06-15 11:35:17
  * @FilePath: /wifi-clock/index.html
 -->
 <!DOCTYPE html>
@@ -69,12 +69,12 @@
             border-radius: 2rem;
             text-align: center;
             margin-right: 1rem;
+            overflow: hidden;
         }
         .tab-active {
             background-color: #f3f3f3;
             color: #3f64fb;
             font-weight: bolder;
-
         }
         .content {
             width: 92%;
@@ -104,9 +104,6 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
         }
         .form-item {
-            /* background-color: #f4f6fb; */
-            /* height: 4rem; */
-            /* margin: 0.5rem 0 ; */
             padding: 0.6rem 0.8rem;
             border-radius: 1rem;
             text-align: left;
@@ -333,18 +330,21 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.6rem 0.8rem;
-            margin: 0.5rem 0 ;
-            background-color: #e4e7f4;
+            padding: 0.5rem 0.8rem;
+            margin: 0.6rem 0 ;
+            background-color: #eaecf6;
             border-radius: 0.4rem;
             box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
-            .form-item-label {
-                margin-bottom: 0;
-            }
+        }
+
+        .form-item-row .form-item-label {
+            margin-bottom: 0;
+            margin-right: 1rem;
         }
 
         .form-item-time {
-            /* width: 10rem; */
+            flex: 1;
+            line-height: 2rem;
         }
 
         .form-item-description {
@@ -357,6 +357,11 @@
         .form-item-inner {
             display: none;
         }
+
+        .form-item-inner-label {
+            font-weight: 400;
+        }
+
         .light-value {
             color: #7893ff;
             font-size: 1.2rem;
@@ -432,11 +437,11 @@
                     <div class="form-item">
                         <label class="form-item-label">时区选择</label>
                         <div class="form-item-group">
-                            <select class="form-item-select" id="timeZone" style="flex: 1 1 0; margin-right: 0.6rem;" >
+                            <select class="form-item-select" id="z_zone" style="flex: 1 1 0; margin-right: 0.6rem;" aria-label="时区选择">
                                 <option value="" selected>东时区</option>
                                 <option value="-">西时区</option>
                             </select>
-                            <select class="form-item-select" id="timeZoneNumber" style="flex: 1 1 0; margin-right: 0.6rem;" >
+                            <select class="form-item-select" id="z_time" style="flex: 1 1 0; margin-right: 0.6rem;" aria-label="时差">
                                 <option value="0">0</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
@@ -451,10 +456,13 @@
                                 <option value="11">11</option>
                             </select>
                         </div>
+                        <p class="form-item-description">
+                           使用北京时间请选择东8区。
+                        </p>
                     </div>
                     <div class="form-button">
-                        <button class="reset-button">重置</button>
-                        <button class="save-button">保存</button>
+                        <button class="reset-button" onclick="handleReset('wifi')">重置</button>
+                        <button class="save-button" onclick="handleSubmit('wifi')">保存</button>
                     </div>
                 </form>
             </div>
@@ -462,7 +470,7 @@
                 <form class="form">
                     <div class="form-item">
                         <label class="form-item-label">手动设置时间</label>
-                        <input class="form-item-input" id="time" value="20:00" type="time" placeholder="" />
+                        <input class="form-item-input" id="localTime" value="20:00" type="localTime" placeholder="" />
                     </div>
                     <div class="form-item autoLocalTime">
                         <input type="checkbox" class="form-item-checkbox" id="form-item-local-time" onchange="getLocalTime(event)" />
@@ -472,8 +480,8 @@
                         注意：该模式下时钟断电不走时，重新上电时间归零。
                     </p>
                     <div class="form-button">
-                        <button class="reset-button">重置</button>
-                        <button class="save-button">保存</button>
+                        <button class="reset-button" onclick="handleReset('clock')">重置</button>
+                        <button class="save-button" onclick="handleSubmit('clock')">保存</button>
                     </div>
                 </form>
             </div>
@@ -505,18 +513,18 @@
                         </p>
                        <div class="form-item-inner">
                             <div class="form-item-row">
-                                <label class="form-item-label">夜间开始时间</label>
+                                <label class="form-item-label form-item-inner-label">夜间开始时间</label>
                                 <input class="form-item-input form-item-time" type="time" id="nightRangeBegin" value="20:00" placeholder=""/>
                             </div>
                             <div class="form-item-row">
-                                <label class="form-item-label">夜间结束时间</label>
+                                <label class="form-item-label form-item-inner-label">夜间结束时间</label>
                                 <input class="form-item-input form-item-time" type="time" id="nightRangeEnd" value="06:00"  placeholder=""/>
                             </div>
                        </div>
                     </div>
                     <div class="form-button">
-                        <button class="reset-button">重置</button>
-                        <button class="save-button">保存</button>
+                        <button class="reset-button" onclick="handleReset('system')">重置</button>
+                        <button class="save-button" onclick="handleSubmit('system')">保存</button>
                     </div>
                 </form>
             </div>
@@ -564,8 +572,17 @@
             document.querySelector('.form-item-inner').style.display = show ? 'block' : 'none';
          }
 
+         function handleReset (type) {
+            alert('重置');
+         }
+
+         function handleSubmit (type) {
+            alert('保存');
+         }
+
          (() => {
             "use strict";
+            // todo 获取默认值
         
         })
      </script>
