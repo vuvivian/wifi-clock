@@ -3,7 +3,7 @@
  * @Description: 请输入....
  * @Date: 2024-05-22 22:21:46
  * @LastEditors: Do not edit
- * @LastEditTime: 2024-06-15 11:35:17
+ * @LastEditTime: 2024-08-12 20:31:46
  * @FilePath: /wifi-clock/index.html
 -->
 <!DOCTYPE html>
@@ -32,11 +32,12 @@
             font-size: 100%;
             font: inherit;
             vertical-align: baseline;
+            /* font-family: 'PT Serif', serif; */
         }
         .container {
           background-color: #f4f6fb;
           height: calc(100vh);
-          overflow: hidden;
+          overflow: auto;
           
         }
         .header {
@@ -70,6 +71,8 @@
             text-align: center;
             margin-right: 1rem;
             overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
         .tab-active {
             background-color: #f3f3f3;
@@ -224,7 +227,18 @@
             color: light-dark(rgb(84, 84, 84), rgb(170, 170, 170));
             border-color: rgba(118, 118, 118, 0.3);
         }
-        input[type="radio"], input[type="checkbox"] {
+        
+        input[type="checkbox"].form-item-checkbox-normal {
+            margin: 0em 0.2rem 0 0;
+            padding: 0;
+            width: 1.6em;
+            height: 1.6em;
+            border: 1px solid #ccc;
+            font-size: 0.9em;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        input[type="radio"], input[type="checkbox"].form-item-checkbox{
             -webkit-appearance: none;
             -moz-appearance: none;
             position: relative;
@@ -271,7 +285,7 @@
             border-radius: .2em;
         }
   
-        input[type="checkbox"]:after {
+        input[type="checkbox"].form-item-checkbox:after {
             content: '\2714';
             display: inline-block;
             position: absolute;
@@ -286,7 +300,7 @@
             transform-origin: center center;
         }
   
-        input[type="checkbox"]:checked:after {
+        input[type="checkbox"].form-item-checkbox:checked:after {
             opacity: 1;
             transform: translate(-50%, -50%) scale3d(1.2, 1.2, 1);
         }
@@ -354,6 +368,10 @@
             padding: 0.2rem 0 0 0;
         }
 
+        .wifi-refresh {
+            color: #3f64fb;
+        }
+
         .form-item-inner {
             display: none;
         }
@@ -413,8 +431,11 @@
                             <input class="form-item-input" id="ssid" type="text" placeholder=""/>
                             <div class="toogle-ssid-btn" onclick="toogleSsid('select')">选择模式</div>
                         </div>
+                        <p class="form-item-description wifi-refresh" onclick="getWifiList()">
+                            👆点此可重新获取您周围的wifi名称列表哦。
+                        </p>
                         <p class="form-item-description">
-                            如果没有搜索到您想要的Wi-Fi名称，请手动输入。
+                            ✍️如果没有搜索到您要的Wi-Fi名称，请手动输入。
                         </p>
                     </div>
                     <div class="form-item">
@@ -442,27 +463,27 @@
                                 <option value="-">西时区</option>
                             </select>
                             <select class="form-item-select" id="z_time" style="flex: 1 1 0; margin-right: 0.6rem;" aria-label="时差">
-                                <option value="0">0</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8" selected>8</option>
-                                <option value="9">9</option>
-                                <option value="10">10</option>
-                                <option value="11">11</option>
+                                <option value="0">0区</option>
+                                <option value="1">1区</option>
+                                <option value="2">2区</option>
+                                <option value="3">3区</option>
+                                <option value="4">4区</option>
+                                <option value="5">5区</option>
+                                <option value="6">6区</option>
+                                <option value="7">7区</option>
+                                <option value="8" selected>8区</option>
+                                <option value="9">9区</option>
+                                <option value="10">10区</option>
+                                <option value="11">11区</option>
                             </select>
                         </div>
                         <p class="form-item-description">
-                           使用北京时间请选择东8区。
+                           使用北京时间请选择东时区-8区。
                         </p>
                     </div>
                     <div class="form-button">
                         <button class="reset-button" onclick="handleReset('wifi')">重置</button>
-                        <button class="save-button" onclick="handleSubmit('wifi')">保存</button>
+                        <button class="save-button" type="button" onclick="handleSubmit('wifi')">保存</button>
                     </div>
                 </form>
             </div>
@@ -470,10 +491,10 @@
                 <form class="form">
                     <div class="form-item">
                         <label class="form-item-label">手动设置时间</label>
-                        <input class="form-item-input" id="localTime" value="20:00" type="localTime" placeholder="" />
+                        <input class="form-item-input" id="localTime" value="20:00" type="time" placeholder="" />
                     </div>
                     <div class="form-item autoLocalTime">
-                        <input type="checkbox" class="form-item-checkbox" id="form-item-local-time" onchange="getLocalTime(event)" />
+                        <input type="checkbox" class="form-item-checkbox-normal" id="form-item-local-time" onchange="getLocalTime(event)" />
                         <label for="form-item-local-time" class="form-item-label">获取手机当前时间</label>
                     </div>
                     <p class="form-item-description">
@@ -535,17 +556,22 @@
     </div>
     <script>
         "use strict";
+        
+        let defaultData = {};
+
          // 切换tab
-         function toogleTab (activeType) {
+         function toogleTab(activeType) {
             document.getElementsByClassName('tab-active')[0]?.classList?.remove('tab-active');
             document.getElementById(`${activeType}-tab`)?.classList?.add('tab-active');
 
             document.getElementsByClassName('content-show')[0]?.classList?.remove('content-show');
             document.getElementById(`${activeType}-content`)?.classList?.add('content-show');
-            
+
+            handleReset(activeType);
          }
 
-         function toogleSsid (type) {
+         // 切换wifi名称输入方式
+         function toogleSsid(type) {
             if (type === 'input') {
                 document.getElementsByClassName(`ssid-input`)[0]?.classList?.remove(`content-hide`);
                 document.getElementsByClassName(`ssid-select`)[0]?.classList?.add('content-hide');
@@ -556,35 +582,176 @@
            
          }
 
-         function getLocalTime (e) {
+         // 获取手机本地时间
+         function getLocalTime(e) {
             e.target.checked ? (
-                document.getElementById("time").disabled = true,
-                document.getElementById("time").value = (new Date()).toLocaleTimeString('zh', { hour12: false , hour: "2-digit", minute: "2-digit" }) 
-            ) : (document.getElementById("time").disabled = false)
+                document.getElementById("localTime").disabled = true,
+                document.getElementById("localTime").value = (new Date()).toLocaleTimeString('zh', { hour12: false , hour: "2-digit", minute: "2-digit" }) 
+            ) : (document.getElementById("localTime").disabled = false)
          }
 
-         function rangeSlide (value) {
+         // 亮度设置
+         function rangeSlide(value) {
             document.querySelector('.light-value').textContent = `${value}/${8}`;
          }
 
-         function handleAutoLight (event) {
+         // 启用自动亮度
+         function handleAutoLight(event) {
             const show = event.target.checked;
             document.querySelector('.form-item-inner').style.display = show ? 'block' : 'none';
          }
 
-         function handleReset (type) {
-            alert('重置');
+         // 重置时钟设置
+         function handleReset(activeType) {
+            event?.preventDefault();
+            event?.stopPropagation();
+            if (activeType === 'wifi') {
+                if(defaultData.is24) {
+                    document.getElementById('is24').checked = true;
+                    document.getElementById('is12').checked = false;
+                } else {
+                    document.getElementById('is12').checked = true;
+                    document.getElementById('is24').checked = false;
+                }
+
+                if(defaultData?.timeZone) {
+                    if(defaultData.timeZone < 0) {
+                        document.getElementById("z_zone").value = "-";
+                    } else {
+                        document.getElementById("z_zone").value = "";
+                    }
+                    document.getElementById('z_time').value = Math.abs(data.timeZone);
+                }
+
+                if(defaultData?.ssidList?.length > 0) {
+                    const selectElement = document.getElementById('ssid');
+                    selectElement.innerHTML = '';
+                    defaultData.ssidList.forEach((ssid) => {
+                        const option = document.createElement('option');
+                        option.value = ssid.name;
+                        option.text = ssid.name;
+                        selectElement.appendChild(option);
+                    });
+                }
+            } else if(activeType === 'system') {
+                document.getElementById("lightLevel").value = defaultData.lightLevel || 4;
+                rangeSlide(defaultData.lightLevel || 4);
+
+                document.getElementById("isAutoRotateScreen").checked = !!defaultData.isAutoRotateScreen;
+               
+                if(!!defaultData.isAutoLight) {
+                    document.getElementById("isAutoLight").checked = !!defaultData.isAutoLight;
+                    handleAutoLight({target: {checked: !!defaultData.isAutoLight}});
+                    document.getElementById("nightRangeBegin").value = defaultData.nightRangeBegin;
+                    document.getElementById("nightRangeEnd").value = defaultData.nightRangeEnd;
+                }
+            } else {
+                document.getElementById("localTime").value = "20:00";
+                document.getElementById("localTime").disabled = false;
+                document.getElementById("form-item-local-time").checked = false;
+            }
+        }
+
+         // 保存时钟设置
+         function handleSubmit(activeType) {
+            event.preventDefault();
+            event.stopPropagation();
+
+           
+
+            let params = {};
+
+            if(activeType === 'wifi') {
+                params = {
+                    ssid: document.getElementById('ssid')?.value,
+                    pwd: document.getElementById('pwd')?.value,
+                    is24: document.getElementById('is24')?.checked,
+                    timeZone: document.getElementById('z_zone')?.value + document.getElementById('z_time')?.value,
+                    isAutoUpdateTime: true,
+                }
+            } else if(activeType === 'clock'){
+                params = {
+                    localTime: document.getElementById('localTime')?.value,
+                    localTimeZone: (new Date()).getTimezoneOffset(),
+                    isAutoUpdateTime: false,
+                }
+            } else {
+                params = {
+                    lightLevel: document.getElementById('lightLevel')?.value,
+                    isAutoRotateScreen: document.getElementById('isAutoRotateScreen')?.checked,
+                    isAutoLight: document.getElementById('isAutoRotateScreen')?.isAutoLight,
+                    nightRangeBegin: document.getElementById('nightRangeBegin')?.value,
+                    nightRangeEnd: document.getElementById('nightRangeEnd')?.value,
+                }
+            }
+
+            fetch('/saveSystemSetting', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(params),
+            })
+            .then(response => {
+                if (!response) {
+                    throw new Error(`HTTP 错误！状态: ${response.status}`);
+                }
+                return response.json(); 
+            })
+            .then(data => {
+                alert("配置已提交!");
+            })
+            .catch(error => {
+                alert("提交超时, 请给时钟重新上电再试！");
+            });
          }
 
-         function handleSubmit (type) {
-            alert('保存');
+         // 获取时钟设置
+         function getClockSetting() {
+            fetch('/getClockSetting')
+            .then(response => {
+                if (!response) {
+                    throw new Error(`HTTP 错误！状态: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                defaultData = data;
+                handleReset('wifi'); 
+            })
+            .catch(error => {
+                // 处理错误情况
+                alert("获取数据超时, 请给时钟重新上电再试！");
+            });
          }
 
-         (() => {
-            "use strict";
-            // todo 获取默认值
-        
-        })
+         function getWifiList () {
+            fetch('/getWifiList') 
+            .then(response => {
+                if (!response) {
+                    throw new Error(`HTTP 错误！状态: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                toogleSsid('select');
+                const selectElement = document.getElementById('ssid');
+                selectElement.innerHTML = '';
+                data.ssidList.forEach((ssid) => {
+                    const option = document.createElement('option');
+                    option.value = ssid.name;
+                    option.text = ssid.name;
+                    selectElement.appendChild(option);
+                });
+            }) 
+            .catch(error => {
+                // 处理错误情况
+                alert("获取数据超时, 请给时钟重新上电再试！");
+            });
+         }
+
+         getClockSetting();
+           
      </script>
 </body>
 </html>
