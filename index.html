@@ -3,7 +3,7 @@
  * @Description: 请输入....
  * @Date: 2024-05-22 22:21:46
  * @LastEditors: Do not edit
- * @LastEditTime: 2024-08-12 20:31:46
+ * @LastEditTime: 2024-08-18 23:13:38
  * @FilePath: /wifi-clock/index.html
 -->
 <!DOCTYPE html>
@@ -142,9 +142,6 @@
             transition: all 0.2s;
         }
         .form-item-range {
-            /* background-size: 98% 3px;
-            margin: auto;
-           */
             width: 100%;
             background: #c7d0f4;
             overflow: hidden;
@@ -190,7 +187,7 @@
             border-radius: 10%;
         }
         .form-button {
-           padding: 1.5rem 0;
+           padding: 1rem 0;
            display: flex;
            justify-content: space-around;
            align-items: center;
@@ -395,10 +392,38 @@
         }
 
         .footer {
-            height: 3rem;
-            line-height: 3rem;
+            height: 2rem;
+            line-height: 2rem;
             text-align: center;
             color: #a6a9ae;
+        }
+
+        .loading-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* 确保它位于页面顶部 */
+        }
+
+        .loading-icon {
+            border: 6px solid rgba(0, 0, 0, 0.1);
+            border-top-color: #5d7cfa;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* 动画效果 */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -421,10 +446,8 @@
                         <label class="form-item-label">Wi-Fi名称</label>
                         <div class="form-item-group ssid-select">
                             <select class="form-item-select" id="ssid">
-                                <option value="">123</option>
-                                <option value="">234</option>
+                                <option value="@Ruijie-sECF4">@Ruijie-sECF4-copy</option>
                             </select>
-                            <!-- <div class="refresh-btn">刷新</div> -->
                             <div class="toogle-ssid-btn" onclick="toogleSsid('input')">手输模式</div>
                        </div>
                        <div class="form-item-group ssid-input content-hide">
@@ -491,7 +514,8 @@
                 <form class="form">
                     <div class="form-item">
                         <label class="form-item-label">手动设置时间</label>
-                        <input class="form-item-input" id="localTime" value="20:00" type="time" placeholder="" />
+                        <input type="datetime-local" class="form-item-input" id="localTime" value="2023-04-01T20:00" placeholder="请选择日期和时间" />
+                        <!-- <input class="form-item-input" id="localTime" value="20:00" type="datetime" placeholder="" /> -->
                     </div>
                     <div class="form-item autoLocalTime">
                         <input type="checkbox" class="form-item-checkbox-normal" id="form-item-local-time" onchange="getLocalTime(event)" />
@@ -526,6 +550,24 @@
                     </div>
                     <div class="form-item-block">
                         <div class="form-item-group">
+                            <label class="form-item-label">首位显示0</label>
+                            <input class="form-item-checkbox" type="checkbox" id="isFixZero" />
+                        </div>
+                        <p class="form-item-description">
+                            开启后时钟屏幕第一位为空时显示0，比如01:00。
+                         </p>
+                    </div>
+                    <div class="form-item-block">
+                        <div class="form-item-group">
+                            <label class="form-item-label">交替日期与时间</label>
+                            <input class="form-item-checkbox" type="checkbox" id="isLoopDisplay" />
+                        </div>
+                        <p class="form-item-description">
+                            开启后时钟屏幕将自动交替显示当前日期与时间。
+                         </p>
+                    </div>
+                    <div class="form-item-block">
+                        <div class="form-item-group">
                             <label class="form-item-label">自动亮度</label>
                             <input class="form-item-checkbox" type="checkbox"  id="isAutoLight" onchange="handleAutoLight(event)"/>
                         </div>
@@ -552,6 +594,9 @@
         </div>
         <div class="footer">
             @2024 晚间电子科技
+        </div>
+        <div id="loading-container" class="loading-container">
+            <div class="loading-icon"></div>
         </div>
     </div>
     <script>
@@ -586,9 +631,29 @@
          function getLocalTime(e) {
             e.target.checked ? (
                 document.getElementById("localTime").disabled = true,
-                document.getElementById("localTime").value = (new Date()).toLocaleTimeString('zh', { hour12: false , hour: "2-digit", minute: "2-digit" }) 
+                // document.getElementById("localTime").value = (new Date()).toLocaleTimeString('zh', { hour12: false , hour: "2-digit", minute: "2-digit" }) 
+                setLocalTime()
             ) : (document.getElementById("localTime").disabled = false)
          }
+
+         function setLocalTime() {
+            const localTimeInput = document.getElementById('localTime');
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hour = String(now.getHours()).padStart(2, '0');
+            const minute = String(now.getMinutes()).padStart(2, '0');
+            // 注意：datetime-local 通常不显示秒数，但如果你需要，可以加上它
+            const second = '00'; // 设置为00，因为datetime-local通常不处理秒
+
+            // 构造日期时间字符串
+            const dateTimeString = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+
+            // 设置输入框的值
+            localTimeInput.value = dateTimeString;
+        }
+
 
          // 亮度设置
          function rangeSlide(value) {
@@ -620,7 +685,7 @@
                     } else {
                         document.getElementById("z_zone").value = "";
                     }
-                    document.getElementById('z_time').value = Math.abs(data.timeZone);
+                    document.getElementById('z_time').value = Math.abs(defaultData.timeZone);
                 }
 
                 if(defaultData?.ssidList?.length > 0) {
@@ -638,7 +703,11 @@
                 rangeSlide(defaultData.lightLevel || 4);
 
                 document.getElementById("isAutoRotateScreen").checked = !!defaultData.isAutoRotateScreen;
-               
+
+                document.getElementById("isFixZero").checked = !!defaultData.isFixZero;
+
+                document.getElementById("isLoopDisplay").checked = !!defaultData.isLoopDisplay;
+
                 if(!!defaultData.isAutoLight) {
                     document.getElementById("isAutoLight").checked = !!defaultData.isAutoLight;
                     handleAutoLight({target: {checked: !!defaultData.isAutoLight}});
@@ -656,9 +725,7 @@
          function handleSubmit(activeType) {
             event.preventDefault();
             event.stopPropagation();
-
-           
-
+            document.getElementById('loading-container').style.display = 'flex';
             let params = {};
 
             if(activeType === 'wifi') {
@@ -679,41 +746,49 @@
                 params = {
                     lightLevel: document.getElementById('lightLevel')?.value,
                     isAutoRotateScreen: document.getElementById('isAutoRotateScreen')?.checked,
-                    isAutoLight: document.getElementById('isAutoRotateScreen')?.isAutoLight,
+                    isFixZero: document.getElementById('isFixZero')?.checked,
+                    isLoopDisplay: document.getElementById('isLoopDisplay')?.checked,
+                    isAutoLight: document.getElementById('isAutoLight')?.checked,
                     nightRangeBegin: document.getElementById('nightRangeBegin')?.value,
                     nightRangeEnd: document.getElementById('nightRangeEnd')?.value,
                 }
             }
 
+            const formData = new FormData();
+
+            for (const key in params) {
+                if (params.hasOwnProperty(key)) {
+                    formData.append(key, params[key]);
+                }
+            }
+
             fetch('/saveSystemSetting', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(params),
+                body: formData,
             })
             .then(response => {
-                if (!response) {
+                if (!response) { 
                     throw new Error(`HTTP 错误！状态: ${response.status}`);
                 }
-                return response.json(); 
-            })
-            .then(data => {
+                document.getElementById('loading-container').style.display = 'none';
                 alert("配置已提交!");
+                defaultData = Object.assign({}, defaultData, params);
             })
             .catch(error => {
+                document.getElementById('loading-container').style.display = 'none';
                 alert("提交超时, 请给时钟重新上电再试！");
             });
          }
 
          // 获取时钟设置
          function getClockSetting() {
+            console.log('getClockSetting');
             fetch('/getClockSetting')
             .then(response => {
-                if (!response) {
+                if (!response) { 
                     throw new Error(`HTTP 错误！状态: ${response.status}`);
                 }
-                return response.json();
+                  return response.json();
             })
             .then(data => {
                 defaultData = data;
@@ -728,7 +803,7 @@
          function getWifiList () {
             fetch('/getWifiList') 
             .then(response => {
-                if (!response) {
+                if (!response) { 
                     throw new Error(`HTTP 错误！状态: ${response.status}`);
                 }
                 return response.json();
@@ -750,8 +825,13 @@
             });
          }
 
+         // 页面加载完成后隐藏加载遮罩层
+        window.onload = function() {
+            console.log('onload');
+            document.getElementById('loading-container').style.display = 'none';
+        };
+            
          getClockSetting();
-           
      </script>
 </body>
 </html>
