@@ -3,7 +3,7 @@
  * @Description: 请输入....
  * @Date: 2024-05-22 22:21:46
  * @LastEditors: Do not edit
- * @LastEditTime: 2024-08-27 23:50:13
+ * @LastEditTime: 2024-08-28 23:05:39
  * @FilePath: /wifi-clock/index.html
 -->
 <!DOCTYPE html>
@@ -49,11 +49,10 @@
         }
         .title {
             color: #fbfcff;
-            /* display: flex;
-            align-items: center; */
-            /* justify-content: center; */
-            text-align: center;
-           
+            text-align: center; 
+        }
+        h2 {
+            margin: 0 0 0.5rem 0;
         }
         .nav {
             display: flex;
@@ -82,13 +81,10 @@
         .content {
             width: 92%;
             margin-left: 4%;
-            margin-top: -5rem;
+            margin-top: -7rem;
             border-radius: 1rem;
-            /* height: calc(100vh - 16rem); */
             background-color: #FFFFFF;
-            /* overflow: auto; */
             box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
-            /* box-shadow: rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px, rgba(17, 17, 26, 0.1) 0px 24px 80px; */
         }
         .content-show {
             display: block !important;
@@ -774,22 +770,40 @@
                 body: formData,
             })
             .then(response => {
-                if (!response) { 
+                if (!response || response.status !== 200) { 
                     throw new Error(`HTTP 错误！状态: ${response.status}`);
                 }
+                
                 document.getElementById('loading-container').style.display = 'none';
-                alert("配置已提交!");
+
+                if(activeType === 'wifi') {
+                    switch(response.statusText){
+                        case 'OK':
+                            alert("wifi连接成功!");
+                            break;
+                        case 'FAIL_01':
+                            alert("wifi名称或密码错误，请检查!");
+                            break;
+                        case 'FAIL_02':
+                            alert("wifi授时超时，请检查网络！");
+                            break;
+                        default:
+                            break;
+                    }
+                } else {
+                    alert("配置保存成功!");
+                }
+                
                 defaultData = Object.assign({}, defaultData, params);
             })
             .catch(error => {
                 document.getElementById('loading-container').style.display = 'none';
-                alert("提交超时, 请给时钟重新上电再试！");
+                alert("提交超时, 请给时钟重新上电后再试！");
             });
          }
 
          // 获取时钟设置
          function getClockSetting() {
-            console.log('getClockSetting');
             fetch('/getClockSetting')
             .then(response => {
                 if (!response) { 
@@ -819,12 +833,15 @@
                 toogleSsid('select');
                 const selectElement = document.getElementById('ssid');
                 selectElement.innerHTML = '';
-                data.ssidList.forEach((ssid) => {
-                    const option = document.createElement('option');
-                    option.value = ssid.name;
-                    option.text = ssid.name;
-                    selectElement.appendChild(option);
-                });
+
+                data.ssidList
+                    .filter(ssid => typeof ssid === 'object')
+                    .forEach((ssid) => {
+                        const option = document.createElement('option');
+                        option.value = ssid.name;
+                        option.text = ssid.name;
+                        selectElement.appendChild(option);
+                    });
             }) 
             .catch(error => {
                 // 处理错误情况
