@@ -3,7 +3,7 @@
  * @Description: 请输入....
  * @Date: 2024-05-22 22:21:46
  * @LastEditors: Do not edit
- * @LastEditTime: 2024-08-28 23:05:39
+ * @LastEditTime: 2024-09-10 21:43:27
  * @FilePath: /wifi-clock/index.html
 -->
 <!DOCTYPE html>
@@ -694,7 +694,9 @@
                 if(defaultData?.ssidList?.length > 0) {
                     const selectElement = document.getElementById('ssid');
                     selectElement.innerHTML = '';
-                    defaultData.ssidList.forEach((ssid) => {
+                    defaultData.ssidList
+                    .filter(ssid => typeof ssid === 'object')
+                    .forEach((ssid) => {
                         const option = document.createElement('option');
                         option.value = ssid.name;
                         option.text = ssid.name;
@@ -773,11 +775,12 @@
                 if (!response || response.status !== 200) { 
                     throw new Error(`HTTP 错误！状态: ${response.status}`);
                 }
-                
+                return response.json();
+            })
+            .then(data => {
                 document.getElementById('loading-container').style.display = 'none';
-
                 if(activeType === 'wifi') {
-                    switch(response.statusText){
+                    switch(data.type){
                         case 'OK':
                             alert("wifi连接成功!");
                             break;
@@ -793,7 +796,7 @@
                 } else {
                     alert("配置保存成功!");
                 }
-                
+
                 defaultData = Object.assign({}, defaultData, params);
             })
             .catch(error => {
@@ -822,6 +825,7 @@
          }
 
          function getWifiList () {
+            document.getElementById('loading-container').style.display = 'flex';
             fetch('/getWifiList') 
             .then(response => {
                 if (!response) { 
@@ -847,6 +851,9 @@
                 // 处理错误情况
                 alert("获取数据超时, 请给时钟重新上电再试！");
             });
+            setTimeout(() => {
+                document.getElementById('loading-container').style.display = 'none';
+            }, 2000);
          }
 
          // 页面加载完成后隐藏加载遮罩层
