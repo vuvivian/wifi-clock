@@ -3,7 +3,7 @@
  * @Description: 请输入....
  * @Date: 2024-05-22 22:21:46
  * @LastEditors: Do not edit
- * @LastEditTime: 2024-09-16 14:43:27
+ * @LastEditTime: 2024-09-17 14:24:22
  * @FilePath: /wifi-clock/index.html
 -->
 <!DOCTYPE html>
@@ -429,6 +429,19 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .tip {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            color: white;
+        }
+        .success {
+            background-color: #4CAF50; /* 绿色 */
+        }
+        .failure {
+            background-color: #f44336; /* 红色 */
+        }
     </style>
 </head>
 <body>
@@ -444,6 +457,7 @@
             </div>
         </div>
         <div class="content">
+            <div id="tip" class="tip"></div>
             <div id="wifi-content" class="content-block content-show">
                 <form class="form">
                     <div class="form-item">
@@ -467,19 +481,6 @@
                     <div class="form-item">
                         <label class="form-item-label">Wi-Fi密码</label>
                         <input class="form-item-input" type="text" placeholder=""  id="pwd"/>
-                    </div>
-                    <div class="form-item">
-                        <label class="form-item-label">时钟显示</label>
-                        <div class="form-item-group">
-                            <div class="form-item-radio">
-                                <input type="radio" name="is24" id="is12" value="is12"/>
-                                <label for="is12">12小时制</label>
-                            </div>
-                            <div class="form-item-radio">
-                                <input type="radio" name="is24" id="is24" value="is24" checked/>
-                                <label for="is24">24小时制</label>
-                            </div>
-                        </div>
                     </div>
                     <div class="form-item">
                         <label class="form-item-label">时区选择</label>
@@ -535,6 +536,19 @@
             </div>
             <div id="system-content" class="content-block">
                 <form class="form">
+                    <div class="form-item-block">
+                        <label class="form-item-label">时钟显示</label>
+                        <div class="form-item-group">
+                            <div class="form-item-radio">
+                                <input type="radio" name="is24" id="is12" value="is12"/>
+                                <label for="is12">12小时制</label>
+                            </div>
+                            <div class="form-item-radio">
+                                <input type="radio" name="is24" id="is24" value="is24" checked/>
+                                <label for="is24">24小时制</label>
+                            </div>
+                        </div>
+                    </div>
                     <div class="form-item-block">
                         <div class="form-item-group">
                             <label class="form-item-label">亮度设置</label>
@@ -595,6 +609,7 @@
                 </form>
             </div>
         </div>
+       
         <div class="footer">
             @2024 晚间电子科技
         </div>
@@ -677,14 +692,6 @@
             event?.preventDefault();
             event?.stopPropagation();
             if (activeType === 'wifi') {
-                if(defaultData.is24) {
-                    document.getElementById('is24').checked = true;
-                    document.getElementById('is12').checked = false;
-                } else {
-                    document.getElementById('is12').checked = true;
-                    document.getElementById('is24').checked = false;
-                }
-
                 if(defaultData?.timeZone) {
                     if(defaultData.timeZone < 0) {
                         document.getElementById("z_zone").value = "-";
@@ -707,6 +714,13 @@
                     });
                 }
             } else if(activeType === 'system') {
+                if(defaultData.is24) {
+                    document.getElementById('is24').checked = true;
+                    document.getElementById('is12').checked = false;
+                } else {
+                    document.getElementById('is12').checked = true;
+                    document.getElementById('is24').checked = false;
+                }
                 document.getElementById("lightLevel").value = defaultData.lightLevel || 4;
                 rangeSlide(defaultData.lightLevel || 4);
 
@@ -740,7 +754,6 @@
                 params = {
                     ssid: ssidType === 'select' ? document.getElementById('ssid')?.value : document.getElementById('ssid-input')?.value,
                     pwd: document.getElementById('pwd')?.value,
-                    is24: document.getElementById('is24')?.checked,
                     timeZone: document.getElementById('z_zone')?.value + document.getElementById('z_time')?.value,
                     isAutoUpdateTime: true,
                 }
@@ -752,6 +765,7 @@
                 }
             } else {
                 params = {
+                    is24: document.getElementById('is24')?.checked,
                     lightLevel: document.getElementById('lightLevel')?.value,
                     isAutoRotateScreen: document.getElementById('isAutoRotateScreen')?.checked,
                     isFixZero: document.getElementById('isFixZero')?.checked,
@@ -785,14 +799,14 @@
                     getNetWorkingResult();
                 } else {
                     document.getElementById('loading-container').style.display = 'none';
-                    alert("配置保存成功!");
+                    showTip(true, '配置保存成功!');
                 }
 
                 defaultData = Object.assign({}, defaultData, params);
             })
             .catch(error => {
                 document.getElementById('loading-container').style.display = 'none';
-                alert("提交超时, 请给时钟重新上电后再试！");
+                showTip(false, '获取数据超时, 请给时钟重新上电再试！');
             });
          }
 
@@ -811,7 +825,7 @@
             })
             .catch(error => {
                 // 处理错误情况
-                alert("获取数据超时, 请给时钟重新上电再试！");
+                showTip(false, "获取数据超时, 请给时钟重新上电再试！");
             });
          }
 
@@ -840,7 +854,7 @@
             }) 
             .catch(error => {
                 // 处理错误情况
-                alert("获取数据超时, 请给时钟重新上电再试！");
+                showTip(false, "获取数据超时, 请给时钟重新上电再试！");
             });
             setTimeout(() => {
                 document.getElementById('loading-container').style.display = 'none';
@@ -848,6 +862,9 @@
          }
 
          function getNetWorkingResult () {
+            let timeout;
+            clearTimeout(timeout);
+
             fetch('/getNetWorkingResult')
             .then(response => {
                 if (!response) { 
@@ -859,18 +876,18 @@
                 switch(data.type){
                     case 'OK_00':
                         document.getElementById('loading-container').style.display = 'none';
-                        alert("wifi连接成功!");
+                        showTip(true, "wifi连接成功!");
                         break;
                     case 'FAIL_01':
                         document.getElementById('loading-container').style.display = 'none';
-                        alert("wifi名称或密码错误，请检查!");
+                        showTip(false, "wifi名称或密码错误，请检查!");
                         break;   
                     case 'FAIL_02':
                         document.getElementById('loading-container').style.display = 'none';
-                        alert("wifi授时超时，请检查网络！");
+                        showTip(false, "wifi授时超时，请检查网络！");
                         break;
                     case 'FAIL_03':
-                        setTimeout(() => {
+                        timeout = setTimeout(() => {
                             getNetWorkingResult();
                         }, 500);
                         break;
@@ -881,14 +898,37 @@
             })
             .catch(error => {
                 document.getElementById('loading-container').style.display = 'none';
-                alert("wifi连接超时, 请给时钟重新上电后再试！");
+                showTip(false, "wifi连接超时, 请给时钟重新上电后再试！");
             });
          }
+         
+         function showTip(isSuccess, msg) {
+            var tipElement = document.getElementById('tip');
+            // 清除之前可能存在的定时器，防止重复调用
+            clearTimeout(tipElement.timer);
+
+            // 显示提示信息
+            tipElement.style.display = 'block';
+
+            tipElement.textContent = msg;
+
+            if (isSuccess) {
+                tipElement.classList.add('success');
+                tipElement.classList.remove('failure');
+            } else {
+                tipElement.classList.add('failure');
+                tipElement.classList.remove('success');
+            }
+
+            tipElement.timer = setTimeout(function() {
+                tipElement.style.display = 'none';
+            }, 5000);
+        }
          // 页面加载完成后隐藏加载遮罩层
-        window.onload = function() {
+         window.onload = function() {
             console.log('onload');
             document.getElementById('loading-container').style.display = 'none';
-        };
+         };
             
          getClockSetting();
      </script>
