@@ -3,7 +3,7 @@
  * @Description: 请输入....
  * @Date: 2024-05-22 22:21:46
  * @LastEditors: Do not edit
- * @LastEditTime: 2024-09-17 14:24:22
+ * @LastEditTime: 2024-09-20 21:04:02
  * @FilePath: /wifi-clock/index.html
 -->
 <!DOCTYPE html>
@@ -156,7 +156,7 @@
             line-height: 2.7rem;
         }
         .form-item-radio {
-            margin: 0 1rem 0 0rem ;
+            margin: 0.4rem 1rem 0 0rem ;
             color: #2f3140;
             font-weight: 700;
             font-size: 0.8rem;
@@ -320,9 +320,12 @@
         }
 
         input[type="datetime-local"] {
-            width: 100%;
+            width: 100% !important;
             color: #2f3140;
             font-size: 0.8rem;
+        }
+        input[type="datetime-local"]:disabled {
+            background-color: #f3f3f3;
         }
 
         .form-item-block {
@@ -537,7 +540,9 @@
             <div id="system-content" class="content-block">
                 <form class="form">
                     <div class="form-item-block">
-                        <label class="form-item-label">时钟显示</label>
+                        <div class="form-item-group">
+                            <label class="form-item-label">时钟显示</label>
+                        </div>
                         <div class="form-item-group">
                             <div class="form-item-radio">
                                 <input type="radio" name="is24" id="is12" value="is12"/>
@@ -571,16 +576,25 @@
                             <input class="form-item-checkbox" type="checkbox" id="isFixZero" />
                         </div>
                         <p class="form-item-description">
-                            开启后时钟屏幕第一位为空时显示0，比如01:00。
+                            开启后时钟屏幕第一位为空时显示0，比如09:00。
                          </p>
                     </div>
                     <div class="form-item-block">
                         <div class="form-item-group">
-                            <label class="form-item-label">交替日期与时间</label>
+                            <label class="form-item-label">交替显示日期</label>
                             <input class="form-item-checkbox" type="checkbox" id="isLoopDisplay" />
                         </div>
                         <p class="form-item-description">
-                            开启后时钟屏幕将自动交替显示当前日期与时间。
+                            开启后时钟屏幕将在固定间隔内自动显示当前日期。
+                         </p>
+                    </div>
+                    <div class="form-item-block">
+                        <div class="form-item-group">
+                            <label class="form-item-label">交替显示星期</label>
+                            <input class="form-item-checkbox" type="checkbox" id="isLoopWeek" />
+                        </div>
+                        <p class="form-item-description">
+                            开启后时钟屏幕将在固定间隔内自动显示当前星期。
                          </p>
                     </div>
                     <div class="form-item-block">
@@ -729,6 +743,8 @@
                 document.getElementById("isFixZero").checked = !!defaultData.isFixZero;
 
                 document.getElementById("isLoopDisplay").checked = !!defaultData.isLoopDisplay;
+                
+                document.getElementById("isLoopWeek").checked = !!defaultData.isLoopWeek;
 
                 if(!!defaultData.isAutoLight) {
                     document.getElementById("isAutoLight").checked = !!defaultData.isAutoLight;
@@ -770,6 +786,7 @@
                     isAutoRotateScreen: document.getElementById('isAutoRotateScreen')?.checked,
                     isFixZero: document.getElementById('isFixZero')?.checked,
                     isLoopDisplay: document.getElementById('isLoopDisplay')?.checked,
+                    isLoopWeek: document.getElementById('isLoopWeek')?.checked,
                     isAutoLight: document.getElementById('isAutoLight')?.checked,
                     nightRangeBegin: document.getElementById('nightRangeBegin')?.value,
                     nightRangeEnd: document.getElementById('nightRangeEnd')?.value,
