@@ -1,0 +1,29 @@
+{
+  "name": "wifi-clock-backend",
+  "version": "1.0.0",
+  "description": "node 服务",
+  "main": "server.js",
+  "scripts": {
+    "test": "node test.js",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vuvivian/wifi-clock.git"
+  },
+  "keywords": [
+    "wifi",
+    "clock",
+    "node"
+  ],
+  "author": "vuvivian",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vuvivian/wifi-clock/issues"
+  },
+  "homepage": "https://github.com/vuvivian/wifi-clock#readme",
+  "dependencies": {
+    "express": "^4.21.1",
+    "puppeteer": "^23.6.0"
+  }
+}
