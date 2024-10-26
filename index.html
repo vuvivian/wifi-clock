@@ -3,7 +3,7 @@
  * @Description: 请输入....
  * @Date: 2024-05-22 22:21:46
  * @LastEditors: Do not edit
- * @LastEditTime: 2024-09-20 21:04:02
+ * @LastEditTime: 2024-10-13 21:35:08
  * @FilePath: /wifi-clock/index.html
 -->
 <!DOCTYPE html>
@@ -451,7 +451,7 @@
     <div class="container">
         <div class="header">
             <div class="title">
-                <h2>WiFi智能授时<br />电子时钟</h2>
+                <h2>大吉大利<br />如意钟</h2>
             </div>
             <div class="nav">
                 <div id="wifi-tab"  class="tab tab-active" onclick="toogleTab('wifi')">Wi-Fi授时</div>
@@ -556,6 +556,31 @@
                     </div>
                     <div class="form-item-block">
                         <div class="form-item-group">
+                            <label class="form-item-label">显示模式</label>
+                        </div>
+                        <div class="form-item-group">
+                            <div class="form-item-radio">
+                                <input type="radio" name="showMode" id="showMode_0" value="0" checked/>
+                                <label for="showMode_0">正常模式</label>
+                            </div>
+                            <div class="form-item-radio">
+                                <input type="radio" name="showMode" id="showMode_1" value="1"/>
+                                <label for="showMode_1">超前模式</label>
+                            </div>
+                        </div>
+                        <div class="form-item-group">
+                            <div class="form-item-radio">
+                                <input type="radio" name="showMode" id="showMode_2" value="2"/>
+                                <label for="showMode_2">滞后模式</label>
+                            </div>
+                            <div class="form-item-radio">
+                                <input type="radio" name="showMode" id="showMode_3" value="3"/>
+                                <label for="showMode_3">全八模式</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-item-block">
+                        <div class="form-item-group">
                             <label class="form-item-label">亮度设置</label>
                             <span class="light-value">4/8</span>
                         </div>
@@ -623,9 +648,9 @@
                 </form>
             </div>
         </div>
-       
         <div class="footer">
-            @2024 晚间电子科技
+            中国风水大师(李政龙)专业定制<br/>
+            联系电话:19511238391
         </div>
         <div id="loading-container" class="loading-container">
             <div class="loading-icon"></div>
@@ -735,6 +760,11 @@
                     document.getElementById('is12').checked = true;
                     document.getElementById('is24').checked = false;
                 }
+                
+                if(defaultData.showMode) {
+                    setRadioGroupValue(defaultData.showMode);
+                }
+                
                 document.getElementById("lightLevel").value = defaultData.lightLevel || 4;
                 rangeSlide(defaultData.lightLevel || 4);
 
@@ -759,6 +789,29 @@
             }
         }
 
+        function getRadioGroupValue() {
+            var selectedRadio = document.querySelector('input[name="showMode"]:checked');
+            
+            if (selectedRadio) {
+                return selectedRadio.value;
+            }
+            
+            return null;
+        }
+
+        function setRadioGroupValue(valueToSet) {
+            var radios = document.querySelectorAll('input[name="showMode"]');
+            
+            radios.forEach(function(radio) {
+                if (radio.value === valueToSet) {
+                    radio.checked = true;
+                } else {
+                    radio.checked = false;
+                }
+            });
+        }
+
+
          // 保存时钟设置
          function handleSubmit(activeType) {
             event.preventDefault();
@@ -782,6 +835,7 @@
             } else {
                 params = {
                     is24: document.getElementById('is24')?.checked,
+                    showMode: getRadioGroupValue(),
                     lightLevel: document.getElementById('lightLevel')?.value,
                     isAutoRotateScreen: document.getElementById('isAutoRotateScreen')?.checked,
                     isFixZero: document.getElementById('isFixZero')?.checked,
